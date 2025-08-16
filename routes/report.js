@@ -27,4 +27,15 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.get('/', async (req, res) => {
+    try {
+        const reports = await MissingPerson.find().sort({ reportedAt: -1 });
+        res.status(200).json(reports);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error while fetching reports' });
+    }
+});
+
+
 module.exports = router;
