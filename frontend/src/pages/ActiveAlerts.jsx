@@ -1,24 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import AlertCard from '../components/AlertCard';
+import { getAllAlerts } from '../utils/alertApi';
 
 const ActiveAlerts = () => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const res = await axios.get('http://localhost:5000/api/report');
-        
-        setAlerts(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        console.error('Error fetching alerts:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAlerts();
+    (async () => {
+      const data = await getAllAlerts();
+      setAlerts(Array.isArray(data) ? data : []);
+      setLoading(false);
+    })();
   }, []);
 
   return (

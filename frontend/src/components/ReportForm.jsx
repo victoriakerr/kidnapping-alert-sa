@@ -1,29 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { detectUserLocation } from '../utils/geolocation';
+import { submitReport } from '../utils/alertApi';
+import { loadFaceModels, imageToDescriptor } from '../lib/faceApi';
 
 const initial = {
   name: '',
   surname: '',
   age: '',
-  gender: '',
+  gender: 'Male', 
   contactNumber: '',
-  photoUrl: '',          // will store base64 data URL
+  photoUrl: '',
   lastSeenLocation: '',
+  description: '', 
 };
 
 const ReportForm = () => {
   const [formData, setFormData] = useState(initial);
-  const [preview, setPreview] = useState(''); // for image preview
+  const [preview, setPreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const imgRef = useRef(null);
 
   useEffect(() => {
     (async () => {
       try {
         const loc = await detectUserLocation();
-        setFormData(prev => ({ ...prev, lastSeenLocation: loc || '' }));
-      } catch {
-        // ignore
-      }
+        if (loc) setFormData(prev => ({ ...prev, lastSeenLocation: loc }));
+      } catch (_) {}
+
+      try { await loadFaceModels(); } catch (e) { console.warn('Face models failed to load', e); }
     })();
   }, []);
 
@@ -32,7 +36,6 @@ const ReportForm = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // handle file selection (convert to base64 and store in photoUrl)
   const handleFile = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -51,7 +54,7 @@ const ReportForm = () => {
 
     const reader = new FileReader();
     reader.onload = () => {
-      const base64 = reader.result; // data URL
+      const base64 = reader.result;
       setFormData(prev => ({ ...prev, photoUrl: base64 }));
       setPreview(base64);
     };
@@ -62,14 +65,26 @@ const ReportForm = () => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch('http://localhost:5000/api/report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+      let faceDescriptor = null;
+      if (preview && imgRef.current) {
+        try {
+          faceDescriptor = await imageToDescriptor(imgRef.current);
+          if (!faceDescriptor) {
+            const proceed = window.confirm('No face detected in the photo. Submit anyway?');
+            if (!proceed) { setSubmitting(false); return; }
+          }
+        } catch {
+          
+        }
+      }
 
-      const out = await res.json();
-      if (!res.ok) throw new Error(out?.error || 'Failed to submit');
+      const payload = { 
+        ...formData, 
+        age: Number(formData.age) || 0, 
+        faceDescriptor: faceDescriptor || []
+      };
+
+      const out = await submitReport(payload);
 
       alert(out?.message || 'Report submitted');
       setFormData(initial);
@@ -90,18 +105,37 @@ const ReportForm = () => {
         <input name="name" placeholder="Name" value={formData.name} onChange={handleChange} required />
         <input name="surname" placeholder="Surname" value={formData.surname} onChange={handleChange} required />
         <input name="age" type="number" placeholder="Age" value={formData.age} onChange={handleChange} required />
-        <input name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} required />
+
+        <select name="gender" value={formData.gender} onChange={handleChange} required>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+
         <input name="contactNumber" placeholder="Contact Number" value={formData.contactNumber} onChange={handleChange} required />
-        <input name="lastSeenLocation" placeholder="Last Seen Location" value={formData.lastSeenLocation} onChange={handleChange} />
+        <input name="lastSeenLocation" placeholder="Last Seen Location" value={formData.lastSeenLocation} onChange={handleChange} required />
       </div>
 
-      {/* Photo picker */}
       <div style={{ marginTop: 14 }}>
-        <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Attach Photo</label>
+        <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Description</label>
+        <textarea
+          name="description"
+          placeholder="Describe the person (clothes, skin color, etc.)"
+          value={formData.description}
+          onChange={handleChange}
+          required
+          rows={4}
+          style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ccc' }}
+        />
+      </div>
+
+      <div style={{ marginTop: 14 }}>
+        <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Attach Photo (optional)</label>
         <input type="file" accept="image/*" onChange={handleFile} />
         {preview ? (
           <div style={{ marginTop: 10 }}>
             <img
+              ref={imgRef}
               src={preview}
               alt="Preview"
               style={{ width: 160, height: 160, objectFit: 'cover', borderRadius: 12, border: '1px solid #e5e7eb' }}
