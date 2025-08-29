@@ -6,21 +6,23 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchAlerts() {
+    (async () => {
       const data = await getAllAlerts();
-      setAlerts(data);
+      setAlerts(Array.isArray(data) ? data : []);
       setLoading(false);
-    }
-    fetchAlerts();
+    })();
   }, []);
 
-  const getStatusBadge = (status) => {
-    let color = "";
-    if (status.toLowerCase() === "missing") color = "bg-red-600";
-    if (status.toLowerCase() === "found") color = "bg-green-600";
-    if (status.toLowerCase() === "deceased") color = "bg-gray-800";
+  const Badge = ({ status = 'Missing' }) => {
+    const s = (status || 'Missing').toLowerCase();
+    const map = {
+      missing: { background: '#dc2626' },
+      found: { background: '#16a34a' },
+      deceased: { background: '#6b7280' },
+    };
+    const style = map[s] || map.missing;
     return (
-      <span className={`text-white px-2 py-1 rounded text-sm ${color}`}>
+      <span style={{ ...style, color: '#fff', padding: '4px 8px', borderRadius: 8, fontSize: 12 }}>
         {status}
       </span>
     );
@@ -43,11 +45,11 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {alerts.map((alert) => (
-              <tr key={alert.id} className="text-center">
-                <td className="p-2 border">{alert.name}</td>
-                <td className="p-2 border">{alert.lastSeen || "Unknown"}</td>
-                <td className="p-2 border">{getStatusBadge(alert.status)}</td>
+            {alerts.map((a) => (
+              <tr key={a._id} className="text-center">
+                <td className="p-2 border">{[a?.name, a?.surname].filter(Boolean).join(' ') || '—'}</td>
+                <td className="p-2 border">{a?.lastSeenLocation || 'Unknown'}</td>
+                <td className="p-2 border"><Badge status={a?.status || 'Missing'} /></td>
               </tr>
             ))}
           </tbody>

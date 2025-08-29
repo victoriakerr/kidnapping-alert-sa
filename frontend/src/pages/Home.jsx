@@ -1,15 +1,16 @@
 import React from 'react';
+import EmergencyButton from "../components/EmergencyButton";
+
 
 const Home = () => {
   return (
     <div style={{ padding: 20, maxWidth: 1100, margin: '0 auto', fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif' }}>
-      {/* Top-left branding */}
+
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>Kidnapping Alert SA</h1>
         <p style={{ margin: 0, color: '#6b7280' }}>Emergency Response Assistant</p>
       </div>
 
-      {/* Main header */}
       <header style={{ textAlign: 'center', marginBottom: 24 }}>
         <h2 style={{ fontSize: 36, margin: '0 0 8px', fontWeight: 900 }}>Kidnapping Alert SA</h2>
         <p style={{ fontSize: 18, margin: '6px 0', color: '#374151' }}>
@@ -49,7 +50,6 @@ const Home = () => {
         </div>
       </header>
 
-      {/* Stats */}
       <div
         style={{
           display: 'grid',
@@ -73,7 +73,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* How It Works */}
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontSize: 22, fontWeight: 800, textAlign: 'center', marginBottom: 16 }}>How It Works</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 16 }}>
@@ -98,13 +97,16 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Emergency */}
+      
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontSize: 22, fontWeight: 900, color: '#dc2626', margin: '0 0 8px' }}>Emergency Situation?</h3>
         <p style={{ margin: '0 0 12px', color: '#374151' }}>
-          For immediate emergencies, contact the authorities first.
+          For immediate emergencies, contact the authorities first, or trigger SOS to alert the community instantly.
         </p>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+
+        <EmergencyButton />
+
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 16 }}>
           <a
             href="tel:10111"
             style={{
@@ -134,7 +136,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Footer blocks */}
+
       <footer style={{ borderTop: '1px solid #e5e7eb', paddingTop: 18, marginTop: 18 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 16 }}>
           <div>

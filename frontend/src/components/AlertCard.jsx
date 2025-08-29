@@ -13,7 +13,7 @@ const AlertCard = ({ data }) => {
     lastSeenLocation = '',
     contactNumber = '',
     reportedAt,
-    status = 'Missing', // expected values: 'Missing' | 'found' | 'Deceased'
+    status = 'Missing',
   } = data;
 
   const fullName = [name, surname].filter(Boolean).join(' ');
@@ -54,9 +54,7 @@ const AlertCard = ({ data }) => {
         <span style={{ fontSize: 12, color: '#6b7280' }}>#{_id?.slice(-5) || '—'}</span>
       </div>
 
-      {/* Body */}
       <div style={{ padding: 16, display: 'flex', gap: 16 }}>
-        {/* Photo */}
         <div style={{ flexShrink: 0 }}>
           {photoUrl ? (
             <img
@@ -89,7 +87,6 @@ const AlertCard = ({ data }) => {
           )}
         </div>
 
-        {/* Info */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3
             style={{
@@ -165,3 +162,4 @@ const AlertCard = ({ data }) => {
 };
 
 export default AlertCard;
+
